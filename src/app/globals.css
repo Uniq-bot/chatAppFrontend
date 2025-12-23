@@ -1,26 +1,22 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@plugin "daisyui";
+@daisyui {
+  themes: ["light", "dark", "cupcake", "retro"];
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.spin{
+    animation: rotate 1s linear infinite;
+    scale:1.5;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+::-webkit-scrollbar{
+  display: none;
+  
+}
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  to {
+    transform: rotate(360deg);
+  }
 }
