@@ -3,13 +3,35 @@
 import { create } from "zustand";
 import { axiosInstance } from "./axios";
 import toast from "react-hot-toast";
+import { io } from "socket.io-client";
 
-const useAuth = create((set) => ({
+
+const BASE_URI="http://localhost:5000";
+
+
+const useAuth = create((set, get) => ({
   isAuthenticated: false,
   user: null,
   loading: true, // checkAuth in progress
   isSigningUp: false,
   isLoggingIn: false,
+  socket:null,
+  onlineUsers:null,
+  connectSocket:()=>{
+    const {user}=get();
+    if(!user || get().socket?.connected ) return;
+    const socket=io(BASE_URI, {
+      query: { userId: user._id },
+    });
+    socket.connect();
+    set({socket});
+
+    socket.on('onlineUsers', (onlineUsersId)=>{
+      set({onlineUsers: onlineUsersId});
+    });
+    
+  },
+  disconnectSocket:()=>{},
 
   checkAuth: async () => {
     set({ loading: true }); // start loading
@@ -30,6 +52,8 @@ const useAuth = create((set) => ({
         user: res.data.user,
         loading: false,
       });
+      get().connectSocket();
+
     } catch (err) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
@@ -51,7 +75,7 @@ const useAuth = create((set) => ({
         loading: false,
         isLoggingIn: false,
       });
-
+      get().connectSocket();
       return res;
     } catch (err) {
       set({ isLoggingIn: false });
@@ -74,6 +98,7 @@ const useAuth = create((set) => ({
         loading: false,
         isSigningUp: false,
       });
+      get().connectSocket();
       return res;
     } catch (err) {
       set({ isSigningUp: false });
@@ -84,6 +109,7 @@ const useAuth = create((set) => ({
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     set({ isAuthenticated: false, user: null, loading: false });
+    get().disconnectSocket();
   },
   isUpdatingProfile: false,
   updateProfile: async (data) => {
@@ -107,7 +133,8 @@ const useAuth = create((set) => ({
     } finally {
       set({ isUpdatingProfile: false });
     }
-  }
+  },
+
 }));
 
 export default useAuth;

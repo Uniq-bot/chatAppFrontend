@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { axiosInstance } from "./axios";
 import toast from "react-hot-toast";
+import useAuth from "./useAuth";
 
 export const useChatMessage = create((set, get) => ({
   messages: [],
@@ -51,9 +52,9 @@ sendMessages:async(data)=>{
   const {messages, selectedUser}= get();
   try {
     const res= await axiosInstance.post(`/sendMessage/${selectedUser._id}`,data);
-    const newMessage= res.data;
+    const newMessage= res.data.newMessage;
     set({messages:[...messages, newMessage]});
-    
+    console.log('messages', messages);
     
   } catch (error) {
     console.error(error);
@@ -62,6 +63,22 @@ sendMessages:async(data)=>{
  
 
 },
+  messageListener: ()=>{
+    const { selectedUser }= get();
+    if(!selectedUser){
+      return;
+    }
+    const socket = useAuth.getState().socket;
+    if (!socket) return;
+    // Prevent duplicate listeners when switching users
+    socket.off("newMessage");
+    socket.on("newMessage", (newMessage)=>{
+      const { messages, selectedUser: currentSelected } = get();
+      if (currentSelected && newMessage.senderId === currentSelected._id) {
+        set({ messages: [...messages, newMessage] });
+      }
+    });
+  },
 
   setSelectedUser: (selectedUser) => {
     set({ selectedUser });

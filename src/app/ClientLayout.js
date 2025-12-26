@@ -11,7 +11,7 @@ import { consumePostNavToast, peekPostNavToast } from "@/libs/postNavToast";
 export default function ClientLayout({ children }) {
   const pathname = usePathname();
   const dontShowNav = pathname === "/pages/Login" || pathname === "/pages/Register";
-  const { loading } = useAuth();
+  const { loading, onlineUsers } = useAuth();
 
   // Show any queued toast only after navigation and when auth state is known
   useEffect(() => {
@@ -26,6 +26,7 @@ export default function ClientLayout({ children }) {
       fn(message);
     }
   }, [pathname, loading]);
+    console.log(onlineUsers)
 
   return (
     <div data-theme="retro">
