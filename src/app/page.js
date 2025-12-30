@@ -7,11 +7,13 @@ import { useChatMessage } from "@/libs/useChatMessage";
 import SideBar from "@/components/SideBar";
 import NoChatSkeleton from "@/components/NoChatSkeleton";
 import ChatWindow from "@/components/ChatWindow";
+import GroupChatWindow from "@/components/GroupChatWindow";
 
 const Home = () => {
   const router = useRouter();
   const { isAuthenticated, loading, checkAuth } = useAuth();
-  const { selectedUser } = useChatMessage();
+  const { selectedUser, selectedGroup } = useChatMessage();
+  
   useEffect(() => {
     checkAuth(); // validate token on page load
     
@@ -40,7 +42,7 @@ const Home = () => {
           <div className="flex w-full h-full rounded-lg overflow-hidden">
             <SideBar />
             {
-              !selectedUser ? <NoChatSkeleton /> : <ChatWindow />
+              !selectedUser && !selectedGroup ? <NoChatSkeleton /> : selectedGroup ? <GroupChatWindow /> : <ChatWindow />
             }
           </div>
 
