@@ -7,17 +7,15 @@ import { axiosInstance } from "@/libs/axios";
 import toast from "react-hot-toast";
 
 const Sidebar = () => {
-  const { getUsers, users, selectedUser, setSelectedUser, selectedGroup, setSelectedGroup, isUsersLoading } = useChatMessage();
+  const { selectedUser, setSelectedUser, selectedGroup, setSelectedGroup } = useChatMessage();
+  
+  const { onlineUsers, contacts } = useAuth();
 
-  const { onlineUsers } = useAuth();
-  const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [activeView, setActiveView] = useState("contacts"); // 'contacts' or 'groups'
   const [groups, setGroups] = useState([]);
   const [isGroupsLoading, setIsGroupsLoading] = useState(false);
 
-  useEffect(() => {
-    getUsers();
-  }, [getUsers]);
+  
 
   useEffect(() => {
     if (activeView === "groups") {
@@ -37,9 +35,9 @@ const Sidebar = () => {
           (typeof member === 'string' ? member : member._id) === currentUserId
         )
       );
-      setGroups(joinedGroups); 
-      console.log("Joined groups:", joinedGroups);
+      setGroups(joinedGroups);
     } catch (error) {
+      console.error('Error fetching groups:', error);
       toast.error(error.response?.data?.message || "Failed to fetch groups");
     } finally {
       setIsGroupsLoading(false);
@@ -47,11 +45,8 @@ const Sidebar = () => {
   };
 
   const onlineIds = Array.isArray(onlineUsers) ? onlineUsers : [];
-  const filteredUsers = showOnlineOnly
-    ? users.filter((user) => onlineIds.includes(user._id))
-    : users;
 
-  if (isUsersLoading || isGroupsLoading) return <SidebarSkeleton />;
+  if (isGroupsLoading) return <SidebarSkeleton />;
 
   return (
     <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
@@ -97,7 +92,7 @@ const Sidebar = () => {
       <div className="overflow-y-auto w-full py-3">
         {activeView === "contacts" ? (
           <>
-            {filteredUsers.map((user) => (
+            {contacts.map((user) => (
               <button
                 key={user._id}
                 onClick={() => setSelectedUser(user)}
@@ -131,8 +126,11 @@ const Sidebar = () => {
               </button>
             ))}
 
-            {filteredUsers.length === 0 && (
-              <div className="text-center text-zinc-500 py-4">No online users</div>
+            {contacts.length === 0 && (
+              <div className="text-center text-zinc-500 py-4">
+                <p className="mb-2">No contacts yet</p>
+                <p className="text-sm">Search for users in the search bar to start chatting</p>
+              </div>
             )}
           </>
         ) : (

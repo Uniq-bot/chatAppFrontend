@@ -5,23 +5,11 @@ import useAuth from "./useAuth";
 
 export const useChatMessage = create((set, get) => ({
   messages: [],
-  users: [],
   selectedUser: null,
-  isUsersLoading: false,
+  selectedGroup: null,
   isMessagesLoading: false,
 
-  getUsers: async () => {
-    set({ isUsersLoading: true });
-    try {
-      const res = await axiosInstance.get("/users");
-      set({ users: res.data.users });
-      console.log(res.data.users)
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch users");
-    } finally {
-      set({ isUsersLoading: false });
-    }
-  },
+ 
 getMessages: async (userId) => {
   set({ isMessagesLoading: true, messages: [] });
 
@@ -40,7 +28,6 @@ getMessages: async (userId) => {
     });
 
     set({ messages: res.data.messages });
-    console.log(res.data.messages)
   } catch (error) {
     console.error(error);
     toast.error(error.response?.data?.message || "Failed to fetch messages");
@@ -48,13 +35,15 @@ getMessages: async (userId) => {
     set({ isMessagesLoading: false });
   }
 },
-sendMessages:async(data)=>{
-  const {messages, selectedUser}= get();
+sendMessages: async (data) => {
+  const { messages, selectedUser } = get();
   try {
-    const res= await axiosInstance.post(`/sendMessage/${selectedUser._id}`,{text: data.message});
-    const newMessage= res.data.newMessage;
-    set({messages:[...messages, newMessage]});
-    console.log('Message sent successfully:', newMessage);
+    const res = await axiosInstance.post(`/sendMessage/${selectedUser._id}`, { text: data.message });
+    const newMessage = res.data.newMessage;
+    set({ messages: [...messages, newMessage] });
+    
+    // Refresh contacts from server after sending message
+    await useAuth.getState().fetchContacts();
     
   } catch (error) {
     console.error(error);
@@ -70,7 +59,6 @@ sendMessages:async(data)=>{
     }
     const socket = useAuth.getState().socket;
     if (!socket || !socket.connected) {
-      console.log("Socket not connected, waiting...");
       setTimeout(() => {
         get().messageListener();
       }, 500);
@@ -78,9 +66,8 @@ sendMessages:async(data)=>{
     }
     // Prevent duplicate listeners when switching users
     socket.off("newMessage");
-    socket.on("newMessage", (newMessage)=>{
+    socket.on("newMessage", (newMessage) => {
       const { messages, selectedUser: currentSelected } = get();
-      console.log("Received direct message:", newMessage);
       // Handle both populated (object) and non-populated (string) senderId
       const senderIdStr = typeof newMessage.senderId === 'string' ? newMessage.senderId : newMessage.senderId?._id;
       const receiverIdStr = typeof newMessage.receiver === 'string' ? newMessage.receiver : newMessage.receiver?._id;
@@ -99,7 +86,6 @@ sendMessages:async(data)=>{
     }
     const socket = useAuth.getState().socket;
     if (!socket || !socket.connected) {
-      console.log("Socket not connected, waiting...");
       setTimeout(() => {
         get().groupMessageListener();
       }, 500);
@@ -108,13 +94,11 @@ sendMessages:async(data)=>{
     
     // Emit joinGroup event to join the socket room
     socket.emit('joinGroup', selectedGroup._id);
-    console.log(`Joining group ${selectedGroup._id}`);
     
     // Prevent duplicate listeners when switching groups
     socket.off("newGroupMessage");
-    socket.on("newGroupMessage", (newMessage)=>{
+    socket.on("newGroupMessage", (newMessage) => {
       const { messages, selectedGroup: currentSelected } = get();
-      console.log("Received group message:", newMessage);
       if (currentSelected && newMessage.groupId === currentSelected._id) {
         set({ messages: [...messages, newMessage] });
       }
@@ -136,7 +120,6 @@ sendMessages:async(data)=>{
         },
       });
       set({ messages: res.data.messages });
-      console.log(res.data.messages)
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || "Failed to fetch group messages");
@@ -144,22 +127,21 @@ sendMessages:async(data)=>{
       set({ isMessagesLoading: false });
     }
   },
-  selectedGroup: null,
+  
   setSelectedGroup: (selectedGroup) => {
     set({ selectedGroup, selectedUser: null });
   },
-  sendGroupMessage: async(data)=>{
-    const {content}= data;
-    const {messages, selectedGroup}=get();
+  
+  sendGroupMessage: async (data) => {
+    const { content } = data;
+    const { messages, selectedGroup } = get();
     try {
-      const res= await axiosInstance.post(`/sendGroupMessage/${selectedGroup._id}`,{content});
-      const newMessage= res.data.newMessage;
-      set({messages:[...messages, newMessage]});
-      console.log('messages', messages);
-      
+      const res = await axiosInstance.post(`/sendGroupMessage/${selectedGroup._id}`, { content });
+      const newMessage = res.data.newMessage;
+      set({ messages: [...messages, newMessage] });
     } catch (error) {
-
-      console.log(error)
+      console.error('Error sending group message:', error);
+      toast.error(error.response?.data?.message || "Failed to send group message");
       
     }
 

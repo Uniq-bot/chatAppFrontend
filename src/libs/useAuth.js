@@ -17,6 +17,27 @@ const useAuth = create((set, get) => ({
   isLoggingIn: false,
   socket:null,
   onlineUsers:null,
+  contacts: [],
+  
+  fetchContacts: async () => {
+    try {
+      const res = await axiosInstance.get('/contacts');
+      set({ contacts: res.data.contacts });
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      set({ contacts: [] });
+    }
+  },
+  
+  getSearchedUser: async(query)=>{
+      try {
+        const res= await axiosInstance.get(`/users/by-name/${query}`);
+        return res.data.user;
+      } catch (error) {
+        console.log(error);
+        return [];
+      }
+  },
   connectSocket:()=>{
     const {user}=get();
     if(!user || get().socket?.connected ) return;
@@ -31,7 +52,13 @@ const useAuth = create((set, get) => ({
     });
     
   },
-  disconnectSocket:()=>{},
+  disconnectSocket: () => {
+    const socket = get().socket;
+    if (socket && socket.connected) {
+      socket.disconnect();
+      set({ socket: null });
+    }
+  },
 
   checkAuth: async () => {
     set({ loading: true }); // start loading
@@ -52,6 +79,7 @@ const useAuth = create((set, get) => ({
         user: res.data.user,
         loading: false,
       });
+      get().fetchContacts();
       get().connectSocket();
 
     } catch (err) {
@@ -113,7 +141,7 @@ const useAuth = create((set, get) => ({
   logout: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    set({ isAuthenticated: false, user: null, loading: false });
+    set({ isAuthenticated: false, user: null, loading: false, contacts: [] });
     get().disconnectSocket();
   },
   createGroup:async(groupData)=>{
@@ -123,26 +151,23 @@ const useAuth = create((set, get) => ({
       if (groupData.image) {
         formData.append("pic", groupData.image);
       }
-      // Don't set Content-Type manually - let axios set it with boundary
       const res = await axiosInstance.post("/auth/createGroup", formData);
-      console.log(res)
       return res;
     } catch (error) {
-      console.log(error)
+      console.error('Error creating group:', error);
       throw error;
     }
   },
-  fetchGroups:async()=>{
+  fetchGroups: async () => {
     try {
-      const res= await axiosInstance.get("/groups/all");
-      console.log(res)
+      const res = await axiosInstance.get("/groups/all");
       return res.data.groups;
     } catch (error) {
-
-      console.log(error)
-      
+      console.error('Error fetching groups:', error);
+      throw error;
     }
   },
+  
   isUpdatingProfile: false,
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });
