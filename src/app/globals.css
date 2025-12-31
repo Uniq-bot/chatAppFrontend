@@ -4,14 +4,42 @@
   themes: ["light", "dark", "cupcake", "retro"];
 }
 
-.spin{
-    animation: rotate 1s linear infinite;
-    scale:1.5;
+/* Global responsive utilities */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
 }
-::-webkit-scrollbar{
+
+.spin {
+  animation: rotate 1s linear infinite;
+  scale: 1.5;
+}
+
+::-webkit-scrollbar {
   display: none;
-  
 }
+
+/* Custom scrollbar for larger screens */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    display: block;
+    width: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--bc) / 0.2);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--bc) / 0.3);
+  }
+}
+
 @keyframes rotate {
   from {
     transform: rotate(0deg);
@@ -19,4 +47,25 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Safe area insets for mobile */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Prevent zoom on input focus for iOS */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Smooth transitions */
+* {
+  -webkit-tap-highlight-color: transparent;
 }

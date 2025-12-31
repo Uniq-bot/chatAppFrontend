@@ -24,23 +24,24 @@ const MessageInput = ({ isGroup = false }) => {
     };
 
     return (
-        <div className='w-full p-4'>
-            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                <div className="flex-1 flex gap-2">
+        <div className='w-full p-2 sm:p-3 md:p-4'>
+            <form onSubmit={handleSendMessage} className="flex items-center gap-1 sm:gap-2">
+                <div className="flex-1 flex gap-1 sm:gap-2">
                     <input
                         type="text"
-                        className="w-full input input-bordered rounded-lg input-sm sm:input-md"
-                        placeholder="Type a message..."
+                        className="w-full input input-bordered rounded-lg input-xs sm:input-sm md:input-md"
+                        placeholder="Message..."
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                     />
                 </div>
                 <button
                     type="submit"
-                    className="btn btn-sm btn-circle"
+                    className="btn btn-xs sm:btn-sm btn-circle"
                     disabled={!text.trim()}
                 >
-                    <Send size={22} />
+                    <Send size={16} className="sm:block hidden" />
+                    <Send size={14} className="sm:hidden block" />
                 </button>
             </form>
         </div>
