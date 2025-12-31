@@ -10,6 +10,7 @@ import {
   Users,
   CirclePlus,
   Search,
+  X,
 } from "lucide-react";
 import useAuth from "@/libs/useAuth";
 import { useChatMessage } from "@/libs/useChatMessage";
@@ -23,6 +24,7 @@ const NavBar = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -78,6 +80,7 @@ const NavBar = () => {
     setSearchQuery("");
     setSearchResults([]);
     setShowResults(false);
+    setShowMobileSearch(false);
     router.push("/");
   };
 
@@ -91,58 +94,157 @@ const NavBar = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  // Close mobile search on escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        setShowMobileSearch(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
   return (
-    <div className="navbar bg-base-100 shadow-sm px-2 sm:px-4 min-h-[56px] sm:min-h-[64px]">
-      <div className="flex-1 min-w-0">
-        <Link href="/" className={`btn btn-ghost text-base sm:text-xl px-2 sm:px-4 ${isActive("/")}`}>
-          Chat
-        </Link>
-      </div>
-      {!loading && isAuthenticated && (
-        <div className="hidden md:flex flex-1 max-w-xs lg:max-w-md mx-2 lg:mx-4 search-container relative">
-          <div className="relative w-full">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <Search className="w-4 h-4 text-gray-400" />
+    <>
+      {/* Mobile Search Overlay */}
+      {showMobileSearch && (
+        <div className="md:hidden fixed inset-0 z-50 bg-base-100">
+          <div className="flex flex-col h-full">
+            {/* Mobile Search Header */}
+            <div className="flex items-center gap-2 p-3 border-b border-base-300">
+              <button
+                onClick={() => {
+                  setShowMobileSearch(false);
+                  setSearchQuery("");
+                  setSearchResults([]);
+                }}
+                className="btn btn-ghost btn-sm btn-circle"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div className="flex-1 relative search-container">
+                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                  <Search className="w-4 h-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className="input input-bordered input-sm w-full pl-10 pr-4"
+                  autoFocus
+                />
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchQuery}
-              onChange={handleSearch}
-              className="input input-bordered input-sm w-full pl-10 pr-4"
-            />
-          </div>
-          {showResults && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-base-100 shadow-lg rounded-lg border border-base-300 max-h-80 overflow-y-auto z-50">
+            
+            {/* Mobile Search Results */}
+            <div className="flex-1 overflow-y-auto">
               {isSearching ? (
-                <div className="p-4 text-center text-gray-500 text-sm">Searching...</div>
+                <div className="p-6 text-center text-gray-500">
+                  <span className="loading loading-spinner loading-md"></span>
+                  <p className="mt-2 text-sm">Searching...</p>
+                </div>
               ) : searchResults.length > 0 ? (
                 <div className="py-2">
                   {searchResults.map((user) => (
                     <button
                       key={user._id}
                       onClick={() => handleSelectUser(user)}
-                      className="w-full px-3 py-2 hover:bg-base-200 flex items-center gap-3 transition-colors"
+                      className="w-full px-4 py-3 hover:bg-base-200 flex items-center gap-3 transition-colors"
                     >
                       <img
                         src={user.pic || "/avatar.png"}
                         alt={user.name}
-                        className="w-8 h-8 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover"
                       />
                       <div className="text-left min-w-0 flex-1">
-                        <div className="font-medium text-sm truncate">{user.name}</div>
-                        <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                        <div className="font-medium truncate">{user.name}</div>
+                        <div className="text-sm text-gray-500 truncate">{user.email}</div>
                       </div>
                     </button>
                   ))}
                 </div>
+              ) : searchQuery.length > 0 ? (
+                <div className="p-6 text-center text-gray-500">
+                  <p>No users found</p>
+                </div>
               ) : (
-                <div className="p-4 text-center text-gray-500 text-sm">No users found</div>
+                <div className="p-6 text-center text-gray-500">
+                  <Search className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>Search for users to start chatting</p>
+                </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       )}
+
+      {/* Main Navbar */}
+      <div className="navbar bg-base-100 shadow-sm px-2 sm:px-4 min-h-[56px] sm:min-h-[64px]">
+        <div className="flex-1 min-w-0">
+          <Link href="/" className={`btn btn-ghost text-base sm:text-xl px-2 sm:px-4 ${isActive("/")}`}>
+            Chat
+          </Link>
+        </div>
+        
+        {/* Mobile Search Button */}
+        {!loading && isAuthenticated && (
+          <button
+            onClick={() => setShowMobileSearch(true)}
+            className="md:hidden btn btn-ghost btn-sm btn-circle mr-1"
+            title="Search"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+        )}
+        
+        {/* Desktop Search */}
+        {!loading && isAuthenticated && (
+          <div className="hidden md:flex flex-1 max-w-xs lg:max-w-md mx-2 lg:mx-4 search-container relative">
+            <div className="relative w-full">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <Search className="w-4 h-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={handleSearch}
+                className="input input-bordered input-sm w-full pl-10 pr-4"
+              />
+            </div>
+            {showResults && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-base-100 shadow-lg rounded-lg border border-base-300 max-h-80 overflow-y-auto z-50">
+                {isSearching ? (
+                  <div className="p-4 text-center text-gray-500 text-sm">Searching...</div>
+                ) : searchResults.length > 0 ? (
+                  <div className="py-2">
+                    {searchResults.map((user) => (
+                      <button
+                        key={user._id}
+                        onClick={() => handleSelectUser(user)}
+                        className="w-full px-3 py-2 hover:bg-base-200 flex items-center gap-3 transition-colors"
+                      >
+                        <img
+                          src={user.pic || "/avatar.png"}
+                          alt={user.name}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div className="text-left min-w-0 flex-1">
+                          <div className="font-medium text-sm truncate">{user.name}</div>
+                          <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-gray-500 text-sm">No users found</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       <div className="flex-none">
         {!loading && isAuthenticated ? (
           <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
@@ -209,7 +311,8 @@ const NavBar = () => {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -67,45 +67,45 @@ const CreateGroupPage = () => {
   };
 
   return (
-    <div className="min-h-[90vh] grid lg:grid-cols-1 bg-base-200">
-      {/* Left Side - Form */}
-      <div className="flex flex-col justify-center items-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-8">
+    <div className="min-h-[calc(100vh-64px)] bg-base-200 py-4 sm:py-6 md:py-8">
+      {/* Form */}
+      <div className="flex flex-col justify-center items-center px-4 sm:px-6 md:px-12">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8">
           {/* Logo */}
-          <div className="text-center mb-8">
+          <div className="text-center">
             <div className="flex flex-col items-center gap-2 group">
               <div
-                className="size-16 rounded-2xl bg-primary
+                className="size-12 sm:size-14 md:size-16 rounded-2xl bg-primary
                 flex items-center justify-center group-hover:scale-105 transition-all duration-300 
                 shadow-lg"
               >
-                <MessageSquare className="size-8 text-primary-content" />
+                <MessageSquare className="size-6 sm:size-7 md:size-8 text-primary-content" />
               </div>
-              <h1 className="text-3xl font-bold mt-4 text-primary">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mt-3 sm:mt-4 text-primary">
                 Create Group
               </h1>
-              <p className="text-base-content/70 text-sm">Start a new group conversation and collaborate</p>
+              <p className="text-xs sm:text-sm text-base-content/70">Start a new group conversation</p>
             </div>
           </div>
 
           {/* Form Card */}
           <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="card-body p-4 sm:p-6">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 {/* Group Image */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-semibold flex items-center gap-2">
+                    <span className="label-text text-sm sm:text-base font-semibold flex items-center gap-2">
                       <Sparkles className="size-4 text-primary" />
                       Group Image
                     </span>
-                    <span className="label-text-alt text-base-content/50">Optional</span>
+                    <span className="label-text-alt text-xs sm:text-sm text-base-content/50">Optional</span>
                   </label>
-                  <div className="flex flex-col items-center gap-4 p-6 border-2 border-dashed 
+                  <div className="flex flex-col items-center gap-3 sm:gap-4 p-4 sm:p-6 border-2 border-dashed 
                     border-base-300 rounded-lg hover:border-primary/50 transition-colors">
                     <div className="relative group">
                       <div className="avatar">
-                        <div className="w-24 rounded-full ring-4 ring-primary ring-offset-base-100 
+                        <div className="w-20 sm:w-24 rounded-full ring-4 ring-primary ring-offset-base-100 
                           ring-offset-2 transition-all group-hover:ring-secondary">
                           {selectedImage ? (
                             <Image 
@@ -117,7 +117,7 @@ const CreateGroupPage = () => {
                             />
                           ) : (
                             <div className="flex items-center justify-center bg-base-200 w-full h-full rounded-full">
-                              <Users className="size-10 text-base-content/30" />
+                              <Users className="size-8 sm:size-10 text-base-content/30" />
                             </div>
                           )}
                         </div>
@@ -125,7 +125,7 @@ const CreateGroupPage = () => {
                       {selectedImage && (
                         <div className="absolute inset-0 rounded-full bg-black/0 
                           group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                          <Camera className="size-6 text-white opacity-0 group-hover:opacity-100 
+                          <Camera className="size-5 sm:size-6 text-white opacity-0 group-hover:opacity-100 
                             transition-opacity" />
                         </div>
                       )}
@@ -135,7 +135,7 @@ const CreateGroupPage = () => {
                       className="btn btn-sm btn-outline gap-2 hover:btn-primary"
                     >
                       <Camera className="size-4" />
-                      {selectedImage ? "Change Image" : "Upload Image"}
+                      <span className="text-xs sm:text-sm">{selectedImage ? "Change" : "Upload"}</span>
                       <input
                         type="file"
                         id="group-image-upload"
@@ -152,11 +152,11 @@ const CreateGroupPage = () => {
                 {/* Group Name */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-semibold flex items-center gap-2">
+                    <span className="label-text text-sm sm:text-base font-semibold flex items-center gap-2">
                       <Users className="size-4 text-primary" />
                       Group Name
                     </span>
-                    <span className="label-text-alt text-base-content/50">Required</span>
+                    <span className="label-text-alt text-xs sm:text-sm text-base-content/50">Required</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -166,19 +166,19 @@ const CreateGroupPage = () => {
                     </div>
                     <input
                       type="text"
-                      className="input input-bordered w-full pl-10 focus:input-primary 
+                      className="input input-bordered w-full pl-10 input-sm sm:input-md focus:input-primary 
                         transition-all"
-                      placeholder="e.g., Team Workspace, Study Group"
+                      placeholder="e.g., Team Workspace"
                       value={groupName}
                       onChange={(e) => setGroupName(e.target.value)}
                       disabled={isCreating}
                     />
                   </div>
                   <label className="label">
-                    <span className="label-text-alt text-base-content/50">
+                    <span className="label-text-alt text-xs text-base-content/50">
                       Minimum 3 characters
                     </span>
-                    <span className={`label-text-alt ${
+                    <span className={`label-text-alt text-xs ${
                       groupName.length >= 3 ? "text-success" : "text-base-content/40"
                     }`}>
                       {groupName.length}/50
@@ -188,32 +188,28 @@ const CreateGroupPage = () => {
 
                 <button
                   type="submit"
-                  className="btn btn-primary w-full gap-2 shadow-lg hover:shadow-xl 
+                  className="btn btn-primary w-full gap-2 btn-sm sm:btn-md shadow-lg hover:shadow-xl 
                     transition-all group"
                   disabled={isCreating}
                 >
                   {isCreating ? (
                     <>
-                      <Loader2 className="size-5 animate-spin" />
-                      Creating Group...
+                      <Loader2 className="size-4 sm:size-5 animate-spin" />
+                      <span className="text-sm">Creating...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="size-5" />
-                      Create Group
-                      <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
+                      <Sparkles className="size-4 sm:size-5" />
+                      <span className="text-sm">Create Group</span>
+                      <ArrowRight className="size-4 sm:size-5 group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
                 </button>
               </form>
             </div>
           </div>
-
-       
         </div>
       </div>
-
-     
     </div>
   );
 };
